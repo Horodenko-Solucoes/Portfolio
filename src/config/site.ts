@@ -8,7 +8,7 @@ export const site = {
   owner: "Leonardo Horodenko Ferreira",
   firstName: "Leonardo",
   role: "Desenvolvedor fullstack",
-  //url: "", // TODO: domínio final (usado em SEO e sitemap)
+  url: "https://horodenkosolucoes.com.br", // TODO: domínio final (usado em SEO e sitemap)
   description:
     "Desenvolvimento de sites, sistemas web, automações, aplicativos e integrações com IA sob medida para o seu negócio.",
   location: "Brasil, atendimento 100% remoto",
