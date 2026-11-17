@@ -302,11 +302,11 @@ export const stack = [
 export const faq = [
   {
     q: "Quanto custa?",
-    a: "O orçamento é gratuito e sem compromisso. Depois de uma conversa rápida eu mando uma proposta com valor.",
+    a: "O orçamento é gratuito e sem compromisso. Depois de uma conversa rápida eu envio uma proposta com valor.",
   },
   {
     q: "Quanto tempo leva?",
-    a: "Uma landing page costuma sair em poucos dias; sistemas maiores são divididos em etapas. O prazo de cada etapa vem escrito na proposta.",
+    a: "Uma landing page costuma sair em poucos dias; sistemas maiores são divididos em etapas. O prazo de cada etapa vai descrito na proposta.",
   },
   {
     q: "Você atende fora da minha cidade?",
@@ -314,11 +314,11 @@ export const faq = [
   },
   {
     q: "Não sei explicar direito o que preciso. Tudo bem?",
-    a: "Tudo bem, é o normal. Me conte o problema que você quer resolver e a gente descobre junto qual é a melhor solução.",
+    a: "Tudo bem, é o normal. Me conte o problema que você quer resolver e nós descobrimos juntos qual é a melhor solução.",
   },
   {
     q: "E depois que o projeto estiver no ar?",
-    a: "Posso cuidar da hospedagem, de ajustes e de novas funcionalidades num plano de manutenção, ou entregar tudo documentado para outra pessoa assumir.",
+    a: "Posso cuidar da hospedagem, de ajustes e de novas funcionalidades em um plano de manutenção, ou entregar tudo documentado para outra pessoa assumir.",
   },
 ];
 
