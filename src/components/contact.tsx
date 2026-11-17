@@ -143,7 +143,7 @@ function ContactForm() {
         startTransition(() => action(data));
       }}
       noValidate
-      className="rounded-3xl bg-white p-6 text-black sm:p-10"
+      className="rounded-3xl bg-white p-6 text-black [color-scheme:light] sm:p-10"
       aria-describedby="form-status"
     >
       <div className="grid gap-5 sm:grid-cols-2">
@@ -194,11 +194,13 @@ function ContactForm() {
             aria-invalid={!!err.projectType}
             aria-describedby={err.projectType ? "projectType-error" : undefined}
           >
-            <option value="" disabled>
+            <option value="" disabled className="bg-white text-stone">
               Escolha uma opção
             </option>
             {projectTypes.map((t) => (
-              <option key={t}>{t}</option>
+              <option key={t} className="bg-white text-black">
+                {t}
+              </option>
             ))}
           </select>
         </Field>
