@@ -106,6 +106,7 @@ function ContactForm() {
   const messageRef = useRef<HTMLTextAreaElement>(null);
   const typeRef = useRef<HTMLSelectElement>(null);
   const statusRef = useRef<HTMLParagraphElement>(null);
+  const checkRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     if (startedRef.current) startedRef.current.value = String(Date.now());
@@ -127,7 +128,16 @@ function ContactForm() {
   }, []);
 
   useEffect(() => {
-    if (state.status === "success") formRef.current?.reset();
+    if (state.status === "success") {
+      formRef.current?.reset();
+      // transitions.dev success check: out → reflow → in (repete a cada envio).
+      const check = checkRef.current;
+      if (check) {
+        check.setAttribute("data-state", "out");
+        void check.offsetWidth;
+        check.setAttribute("data-state", "in");
+      }
+    }
     if (state.status !== "idle") statusRef.current?.focus();
   }, [state]);
 
@@ -236,7 +246,7 @@ function ContactForm() {
           ref={statusRef}
           tabIndex={-1}
           role="status"
-          className={`text-sm outline-none ${
+          className={`flex items-center gap-2.5 text-sm outline-none ${
             state.status === "error"
               ? "font-medium text-[#b42318]"
               : state.status === "success"
@@ -244,7 +254,23 @@ function ContactForm() {
                 : "text-graphite"
           }`}
         >
-          {state.message ?? "Seus dados ficam só comigo e servem para eu te responder."}
+          {state.status === "success" && (
+            <span ref={checkRef} className="t-success-check shrink-0" data-state="out" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                className="size-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                {/* Comprimento do traço ≈ 21.6 (getTotalLength), arredondado para 23. */}
+                <path d="M4.5 12.5l5 5L19.5 7" style={{ strokeDasharray: 23, strokeDashoffset: 23 }} />
+              </svg>
+            </span>
+          )}
+          <span>{state.message ?? "Seus dados ficam só comigo e servem para eu te responder."}</span>
         </p>
         <button
           type="submit"

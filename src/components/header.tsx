@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { site, whatsappLink } from "@/config/site";
 import { WhatsAppIcon } from "./icons";
 import { Logo } from "./logo";
+import { getLenis } from "./smooth-scroll";
 
 const nav = [
   { href: "#servicos", label: "Serviços" },
@@ -25,6 +26,9 @@ export function Header() {
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
+    // Com o menu aberto a rolagem suave também para.
+    if (menuOpen) getLenis()?.stop();
+    else getLenis()?.start();
     if (!menuOpen) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMenuOpen(false);
     window.addEventListener("keydown", onKey);
@@ -73,12 +77,12 @@ export function Header() {
           >
             <span className="relative block h-3 w-6" aria-hidden="true">
               <span
-                className={`absolute left-0 h-[1.5px] w-6 bg-current transition-transform duration-300 ${
+                className={`absolute left-0 h-[1.5px] w-6 bg-current transition-transform duration-250 ease-in-out ${
                   menuOpen ? "top-1.5 rotate-45" : "top-0"
                 }`}
               />
               <span
-                className={`absolute left-0 h-[1.5px] w-6 bg-current transition-transform duration-300 ${
+                className={`absolute left-0 h-[1.5px] w-6 bg-current transition-transform duration-250 ease-in-out ${
                   menuOpen ? "top-1.5 -rotate-45" : "top-3"
                 }`}
               />

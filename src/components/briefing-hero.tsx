@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { briefing, site, whatsappLink } from "@/config/site";
 import { ChevronIcon, WhatsAppIcon } from "./icons";
+import { getLenis } from "./smooth-scroll";
 
 export const BRIEFING_EVENT = "briefing:fill";
 
@@ -19,6 +20,13 @@ const typeByWhat: Record<string, string> = {
 
 type SlotKey = keyof typeof briefing;
 
+/** Tipografia da frase (usada também no medidor invisível). */
+const SENTENCE_TYPE = "leading-[1.1] font-medium tracking-[-0.035em]";
+/** Cada parte da frase numa linha; no celular a linha ainda pode quebrar. */
+const LINE = "block sm:whitespace-nowrap";
+/** Tamanho máximo da frase (3.6rem). */
+const SENTENCE_MAX_PX = 57.6;
+
 export function BriefingHero() {
   const [choice, setChoice] = useState<Record<SlotKey, string>>({
     what: briefing.what[2],
@@ -27,6 +35,43 @@ export function BriefingHero() {
   });
   const [open, setOpen] = useState<SlotKey | null>(null);
   const [changed, setChanged] = useState<SlotKey | null>(null);
+  const sentenceRef = useRef<HTMLParagraphElement>(null);
+  const measureRef = useRef<HTMLSpanElement>(null);
+
+  // A partir de 640px a frase tem sempre 3 linhas: a fonte é ajustada para
+  // que a combinação mais longa caiba na coluna sem quebrar.
+  useEffect(() => {
+    const p = sentenceRef.current;
+    const measure = measureRef.current;
+    const column = p?.parentElement;
+    if (!p || !measure || !column) return;
+    const mq = window.matchMedia("(min-width: 640px)");
+    let ratio = 0; // largura da linha mais longa, em "em"
+
+    function fit() {
+      if (!p || !column) return;
+      if (!mq.matches || !ratio) {
+        p.style.fontSize = "";
+        return;
+      }
+      p.style.fontSize = `${Math.min(SENTENCE_MAX_PX, column.clientWidth / ratio)}px`;
+    }
+    let alive = true;
+    document.fonts.ready.then(() => {
+      if (!alive || !measure) return;
+      const widths = Array.from(measure.children, (c) => c.getBoundingClientRect().width);
+      ratio = Math.max(...widths) / 100;
+      fit();
+    });
+    const ro = new ResizeObserver(fit);
+    ro.observe(column);
+    mq.addEventListener("change", fit);
+    return () => {
+      alive = false;
+      ro.disconnect();
+      mq.removeEventListener("change", fit);
+    };
+  }, []);
 
   const sentence = `Preciso de ${choice.what} para ${choice.forWho} que ${choice.goal}.`;
   const waMessage = `Olá, ${site.firstName}! ${sentence} Podemos conversar?`;
@@ -43,7 +88,11 @@ export function BriefingHero() {
       projectType: typeByWhat[choice.what] ?? "",
     };
     window.dispatchEvent(new CustomEvent(BRIEFING_EVENT, { detail }));
-    document.getElementById("contato")?.scrollIntoView();
+    const target = document.getElementById("contato");
+    if (!target) return;
+    const lenis = getLenis();
+    if (lenis) lenis.scrollTo(target);
+    else target.scrollIntoView();
   }
 
   return (
@@ -51,8 +100,8 @@ export function BriefingHero() {
       className="relative overflow-hidden"
       aria-labelledby="hero-title"
     >
-      <div className="mx-auto grid min-h-[100svh] max-w-7xl items-center gap-12 px-5 pt-28 pb-16 sm:px-8 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,0.75fr)] lg:pt-24">
-        <div>
+      <div className="relative mx-auto grid min-h-[100svh] max-w-7xl items-center gap-12 px-5 pt-28 pb-16 sm:px-8 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,0.6fr)] lg:pt-24">
+        <div className="relative">
           <h1
             id="hero-title"
             className="rise max-w-xl text-lg leading-snug text-pretty text-soft md:text-xl"
@@ -62,9 +111,11 @@ export function BriefingHero() {
           </h1>
 
           <p
-            className="rise mt-8 max-w-[17ch] text-[2.5rem] leading-[1.06] font-medium tracking-[-0.04em] text-balance [animation-delay:120ms] sm:text-6xl lg:text-[4.6rem]"
+            ref={sentenceRef}
+            className={`rise relative z-20 mt-8 ${SENTENCE_TYPE} text-[2.1rem] [animation-delay:80ms] sm:text-[min(3.6rem,3.4vw)]`}
             aria-live="polite"
           >
+            <span className={LINE}>
             Preciso de{" "}
             <Slot
               slot="what"
@@ -74,7 +125,9 @@ export function BriefingHero() {
               animate={changed === "what"}
               onToggle={(o) => setOpen(o ? "what" : null)}
               onPick={(v) => pick("what", v)}
-            />{" "}
+            />
+            </span>{" "}
+            <span className={LINE}>
             para{" "}
             <Slot
               slot="forWho"
@@ -84,7 +137,9 @@ export function BriefingHero() {
               animate={changed === "forWho"}
               onToggle={(o) => setOpen(o ? "forWho" : null)}
               onPick={(v) => pick("forWho", v)}
-            />{" "}
+            />
+            </span>{" "}
+            <span className={LINE}>
             que{" "}
             <Slot
               slot="goal"
@@ -96,13 +151,34 @@ export function BriefingHero() {
               onPick={(v) => pick("goal", v)}
               suffix="."
             />
+            </span>
           </p>
 
-          <p className="rise mt-6 text-sm text-soft [animation-delay:240ms]">
+          {/* Medidor invisível: todas as variações de cada linha a 100px,
+              para achar a mais larga e calcular o tamanho que cabe. */}
+          <span
+            ref={measureRef}
+            aria-hidden="true"
+            className={`pointer-events-none invisible absolute top-0 left-0 -z-10 flex flex-col items-start ${SENTENCE_TYPE} text-[100px]`}
+          >
+            {[
+              ...briefing.what.map((v) => `Preciso de ${v}`),
+              ...briefing.forWho.map((v) => `para ${v}`),
+              ...briefing.goal.map((v) => `que ${v}.`),
+            ].map((line) => (
+              <span key={line} className="whitespace-nowrap">
+                {line}
+                {/* espaço da setinha do slot */}
+                <span className="inline-block w-[0.55em]" />
+              </span>
+            ))}
+          </span>
+
+          <p className="rise mt-6 text-sm text-soft [animation-delay:160ms]">
             Toque nas partes em amarelo para trocar.
           </p>
 
-          <div className="rise mt-10 flex flex-col gap-3 [animation-delay:320ms] sm:flex-row sm:items-center">
+          <div className="rise mt-10 flex flex-col gap-3 [animation-delay:240ms] sm:flex-row sm:items-center">
             <a
               href={whatsappLink(waMessage)}
               target="_blank"
@@ -120,7 +196,7 @@ export function BriefingHero() {
               Detalhar no formulário
             </button>
           </div>
-          <p className="rise mt-5 text-sm text-soft [animation-delay:400ms]">
+          <p className="rise mt-5 text-sm text-soft [animation-delay:320ms]">
             {site.responseTime}
           </p>
         </div>
@@ -161,6 +237,24 @@ function Slot({
   useEffect(() => {
     toggleRef.current = onToggle;
   });
+
+  // transitions.dev menu-dropdown: ao fechar, troca .is-open por .is-closing
+  // e remove .is-closing depois de --dropdown-close-dur.
+  const [prevOpen, setPrevOpen] = useState(open);
+  const [closing, setClosing] = useState(false);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    setClosing(!open);
+  }
+  useEffect(() => {
+    if (!closing) return;
+    const closeMs =
+      parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue("--dropdown-close-dur"),
+      ) || 150;
+    const t = setTimeout(() => setClosing(false), closeMs);
+    return () => clearTimeout(t);
+  }, [closing]);
 
   useEffect(() => {
     if (!open) return;
@@ -216,31 +310,32 @@ function Slot({
         </span>
       </button>
 
-      {open && (
-        <span
-          id={listId}
-          role="listbox"
-          aria-label={labelFor(slot)}
-          onKeyDown={onListKey}
-          className="absolute top-full left-0 z-30 mt-3 flex w-max max-w-[min(22rem,80vw)] flex-col rounded-2xl border border-white/10 bg-[#141514] p-1.5 text-base font-normal tracking-normal text-white shadow-[0_24px_60px_-12px_rgba(0,0,0,0.8)]"
-        >
-          {options.map((opt, i) => (
-            <button
-              key={opt}
-              ref={(el) => {
-                optionRefs.current[i] = el;
-              }}
-              type="button"
-              role="option"
-              aria-selected={opt === value}
-              onClick={() => onPick(opt)}
-              className="rounded-xl px-4 py-2.5 text-left outline-none hover:bg-white/8 focus-visible:bg-white/10 focus-visible:outline-none aria-selected:font-medium aria-selected:text-signal"
-            >
-              {opt}
-            </button>
-          ))}
-        </span>
-      )}
+      <span
+        id={listId}
+        role="listbox"
+        aria-label={labelFor(slot)}
+        aria-hidden={!open}
+        inert={!open}
+        onKeyDown={onListKey}
+        data-origin="top-left"
+        className={`t-dropdown ${open ? "is-open" : closing ? "is-closing" : ""} absolute top-full left-0 z-30 mt-3 flex w-max max-w-[min(22rem,80vw)] flex-col rounded-2xl border border-white/10 bg-[#141514] p-1.5 text-base font-normal tracking-normal text-white shadow-[0_24px_60px_-12px_rgba(0,0,0,0.8)]`}
+      >
+        {options.map((opt, i) => (
+          <button
+            key={opt}
+            ref={(el) => {
+              optionRefs.current[i] = el;
+            }}
+            type="button"
+            role="option"
+            aria-selected={opt === value}
+            onClick={() => onPick(opt)}
+            className="rounded-xl px-4 py-2.5 text-left outline-none hover:bg-white/8 focus-visible:bg-white/10 focus-visible:outline-none aria-selected:font-medium aria-selected:text-signal"
+          >
+            {opt}
+          </button>
+        ))}
+      </span>
     </span>
   );
 }

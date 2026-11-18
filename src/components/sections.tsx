@@ -1,6 +1,6 @@
 import { faq, projects, services, site, stack, steps } from "@/config/site";
 import { ProjectCover } from "./project-cover";
-import { ChevronIcon } from "./icons";
+import { Accordion, Reveal } from "./motion";
 
 const container = "mx-auto max-w-7xl px-5 sm:px-8";
 
@@ -16,17 +16,19 @@ function Heading({
   center?: boolean;
 }) {
   return (
-    <div className={center ? "mx-auto max-w-3xl text-center" : "max-w-3xl"}>
+    <Reveal className={center ? "mx-auto max-w-3xl text-center" : "max-w-3xl"}>
       <h2
         id={id}
-        className="text-[2.25rem] leading-[1.08] font-medium tracking-[-0.035em] text-balance md:text-[3.5rem]"
+        className="t-stagger-line text-[2.25rem] leading-[1.08] font-medium tracking-[-0.035em] text-balance md:text-[3.5rem]"
       >
         {title}
       </h2>
       {intro && (
-        <p className="mt-5 text-lg leading-relaxed text-pretty text-soft md:text-xl">{intro}</p>
+        <p className="t-stagger-line t-stagger-line--2 mt-5 text-lg leading-relaxed text-pretty text-soft md:text-xl">
+          {intro}
+        </p>
       )}
-    </div>
+    </Reveal>
   );
 }
 
@@ -170,69 +172,71 @@ export function Projects() {
                 key={p.title}
                 className={featured ? "md:col-span-2" : offset ? "md:mt-24" : undefined}
               >
-                <article className="group relative">
-                  <ProjectCover project={p} featured={featured} />
-                  <div
-                    className={
-                      featured
-                        ? "mt-7 grid gap-x-12 gap-y-3 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]"
-                        : "mt-6"
-                    }
-                  >
-                    <div>
-                      <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-                        <h3
-                          className={`font-medium tracking-[-0.02em] ${featured ? "text-3xl" : "text-2xl"}`}
-                        >
-                          {p.href ? (
-                            <a
-                              href={p.href}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="after:absolute after:inset-0 hover:underline hover:underline-offset-4"
-                            >
-                              {p.title}
-                            </a>
-                          ) : (
-                            p.title
-                          )}
-                        </h3>
-                        {!featured && (
-                          <p className="text-sm text-soft">
-                            {p.kind}
-                            {p.status && (
-                              <span className="sr-only">, {p.status.toLowerCase()}</span>
+                <Reveal>
+                  <article className="t-stagger-line group relative">
+                    <ProjectCover project={p} featured={featured} />
+                    <div
+                      className={
+                        featured
+                          ? "mt-7 grid gap-x-12 gap-y-3 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]"
+                          : "mt-6"
+                      }
+                    >
+                      <div>
+                        <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+                          <h3
+                            className={`font-medium tracking-[-0.02em] ${featured ? "text-3xl" : "text-2xl"}`}
+                          >
+                            {p.href ? (
+                              <a
+                                href={p.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="after:absolute after:inset-0 hover:underline hover:underline-offset-4"
+                              >
+                                {p.title}
+                              </a>
+                            ) : (
+                              p.title
                             )}
+                          </h3>
+                          {!featured && (
+                            <p className="text-sm text-soft">
+                              {p.kind}
+                              {p.status && (
+                                <span className="sr-only">, {p.status.toLowerCase()}</span>
+                              )}
+                            </p>
+                          )}
+                        </div>
+                        {featured && (
+                          <p className="mt-2 text-sm text-soft">
+                            {p.kind}
+                            {p.status && <span className="sr-only">, {p.status.toLowerCase()}</span>}
                           </p>
                         )}
+                        {p.client && <p className="mt-1 text-fg/80">{p.client}</p>}
                       </div>
-                      {featured && (
-                        <p className="mt-2 text-sm text-soft">
-                          {p.kind}
-                          {p.status && <span className="sr-only">, {p.status.toLowerCase()}</span>}
+                      <div>
+                        <p
+                          className={`max-w-[60ch] leading-relaxed text-soft ${featured ? "text-lg md:mt-1" : "mt-3"}`}
+                        >
+                          {p.description}
                         </p>
-                      )}
-                      {p.client && <p className="mt-1 text-fg/80">{p.client}</p>}
+                        <ul className="mt-4 flex flex-wrap gap-2" aria-label="Tecnologias">
+                          {p.stack.map((t) => (
+                            <li
+                              key={t}
+                              className="rounded-full border border-rule px-3 py-1 text-xs font-medium text-fg/75"
+                            >
+                              {t}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     </div>
-                    <div>
-                      <p
-                        className={`max-w-[60ch] leading-relaxed text-soft ${featured ? "text-lg md:mt-1" : "mt-3"}`}
-                      >
-                        {p.description}
-                      </p>
-                      <ul className="mt-4 flex flex-wrap gap-2" aria-label="Tecnologias">
-                        {p.stack.map((t) => (
-                          <li
-                            key={t}
-                            className="rounded-full border border-rule px-3 py-1 text-xs font-medium text-fg/75"
-                          >
-                            {t}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </article>
+                  </article>
+                </Reveal>
               </li>
             );
           })}
@@ -258,17 +262,24 @@ export function Steps() {
           intro="Você sabe em que etapa o projeto está do começo ao fim."
         />
 
-        <ol className="mt-20 grid gap-12 md:grid-cols-2 lg:grid-cols-4 lg:gap-10">
-          {steps.map((step, i) => (
-            <li key={step.title} className="border-t border-rule pt-8">
-              <span className="block text-6xl font-light tracking-[-0.04em] text-signal tabular-nums">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <h3 className="mt-8 text-2xl font-medium tracking-[-0.02em]">{step.title}</h3>
-              <p className="mt-3 leading-relaxed text-soft">{step.text}</p>
-            </li>
-          ))}
-        </ol>
+        <Reveal className="mt-20">
+          <ol className="grid gap-12 md:grid-cols-2 lg:grid-cols-4 lg:gap-10">
+            {steps.map((step, i) => (
+              <li
+                key={step.title}
+                className="t-stagger-line border-t border-rule pt-8"
+                // Stagger de 80ms (--duration-micro) por etapa: 3 × 80 = 240ms no total.
+                style={{ transitionDelay: `calc(var(--duration-micro) * ${i})` }}
+              >
+                <span className="block text-6xl font-light tracking-[-0.04em] text-signal tabular-nums">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <h3 className="mt-8 text-2xl font-medium tracking-[-0.02em]">{step.title}</h3>
+                <p className="mt-3 leading-relaxed text-soft">{step.text}</p>
+              </li>
+            ))}
+          </ol>
+        </Reveal>
       </div>
     </section>
   );
@@ -282,12 +293,14 @@ export function About() {
       <div
         className={`${container} grid gap-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-24`}
       >
-        <h2
-          id="sobre-title"
-          className="text-[2.25rem] leading-[1.08] font-medium tracking-[-0.035em] text-balance md:text-[3.5rem]"
-        >
-          Você fala direto com quem escreve o código.
-        </h2>
+        <Reveal>
+          <h2
+            id="sobre-title"
+            className="t-stagger-line text-[2.25rem] leading-[1.08] font-medium tracking-[-0.035em] text-balance md:text-[3.5rem]"
+          >
+            Você fala direto com quem escreve o código.
+          </h2>
+        </Reveal>
         <div className="space-y-5 text-lg leading-relaxed text-soft lg:pt-3">
           <p>
             Sou o <span className="text-fg">{site.owner}</span>,{" "}
@@ -316,19 +329,7 @@ export function Faq() {
     >
       <div className={`${container} max-w-4xl`}>
         <Heading id="perguntas-title" title="Dúvidas comuns" center />
-        <div className="mt-16 border-b border-rule">
-          {faq.map((item) => (
-            <details key={item.q} className="group border-t border-rule">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-7 text-xl font-medium tracking-[-0.01em] [&::-webkit-details-marker]:hidden">
-                {item.q}
-                <span className="grid size-9 shrink-0 place-items-center rounded-full border border-rule transition-colors group-open:bg-fg group-open:text-bg">
-                  <ChevronIcon className="size-4 transition-transform group-open:rotate-180" />
-                </span>
-              </summary>
-              <p className="max-w-[62ch] pb-8 text-lg leading-relaxed text-soft">{item.a}</p>
-            </details>
-          ))}
-        </div>
+        <Accordion items={faq} />
       </div>
     </section>
   );

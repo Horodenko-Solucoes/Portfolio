@@ -1,5 +1,7 @@
 import { BriefingHero } from "@/components/briefing-hero";
 import { Contact } from "@/components/contact";
+import { DotBackdrop } from "@/components/dot-backdrop";
+import { SmoothScroll } from "@/components/smooth-scroll";
 import { Footer, WhatsAppFloat } from "@/components/footer";
 import { Header } from "@/components/header";
 import { About, Faq, Projects, Services, StackMarquee, Steps } from "@/components/sections";
@@ -47,6 +49,8 @@ export default function Home() {
       >
         Pular para o conteúdo
       </a>
+      <SmoothScroll />
+      <DotBackdrop />
       <Header />
       <main id="conteudo">
         <BriefingHero />
